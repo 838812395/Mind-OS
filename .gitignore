@@ -30,6 +30,21 @@
 !量化算法/改进建议.md
 !智慧集成/人性解码器.md
 
-# 4. OS files
+# 4. Technical Layer (Keep code, ignore runtime)
+!mind-os.py
+!requirements.txt
+!scripts/
+!config/
+.venv/
+.mind_os/
+__pycache__/
+*.pyc
+
+# 5. Reports & Images
+分析报告/*.png
+分析报告/*.pdf
+!分析报告/.gitkeep
+
+# 6. OS files
 .DS_Store
 Thumbs.db

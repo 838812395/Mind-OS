@@ -1,0 +1,33 @@
+# Mind-OS Global Configuration
+
+# 📂 Project Root Markers
+root_marker: ".mind-os-root"
+
+# 📁 Monitored Directories (Logical Mapping)
+# Key is the logical purpose, value is the actual directory name
+directories:
+  knowledge: "知识画像"
+  psychology: "心理画像"
+  algorithms: "量化算法"
+  awareness: "深度觉察"
+  reports: "分析报告"
+
+# 📊 Radar Chart Settings
+radar:
+  output_file: "分析报告/latest_radar.png"
+  dimensions:
+    - name: "Cognition"
+      key: "认知力"
+    - name: "Execution"
+      key: "执行力"
+    - name: "Emotion"
+      key: "情感力"
+    - name: "Social"
+      key: "社交力"
+    - name: "Creativity"
+      key: "创造力"
+
+# 🛡️ Audit Rules
+audit:
+  require_frontmatter: true
+  file_extensions: [".md"]
