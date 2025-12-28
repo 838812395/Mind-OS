@@ -94,6 +94,38 @@ def query_memory(query_str):
     print("-------------------------------\n")
     return nodes
 
+def semantic_route(message):
+    """Route a message to the most semantically relevant file."""
+    print(f"🧭 Routing thought: '{message[:50]}...'")
+    
+    db = chromadb.PersistentClient(path=PERSIST_DIR)
+    chroma_collection = db.get_or_create_collection("mind_os_memory")
+    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+    index = VectorStoreIndex.from_vector_store(vector_store)
+    
+    retriever = index.as_retriever(similarity_top_k=1)
+    nodes = retriever.retrieve(message)
+    
+    if not nodes:
+        print("⚠️ No relevant file found. Defaulting to '增量引擎/收集箱.md'")
+        target_file = os.path.join(LOGS_DIR, "增量引擎", "收集箱.md")
+    else:
+        target_file = nodes[0].metadata.get('file_path')
+        print(f"🎯 Matched: {os.path.basename(target_file)}")
+
+    # Ensure target directory exists
+    os.makedirs(os.path.dirname(target_file), exist_ok=True)
+    
+    # Append to file
+    with open(target_file, 'a', encoding='utf-8') as f:
+        import datetime
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        f.write(f"\n\n### 📝 AI Captured ({timestamp})\n")
+        f.write(f"> {message}\n")
+    
+    print(f"✅ Thought appended to {os.path.basename(target_file)}")
+    return target_file
+
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "sync":
         sync_memory()

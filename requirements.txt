@@ -7,3 +7,5 @@ llama-index-embeddings-fastembed
 fastembed
 chromadb
 python-dotenv
+streamlit
+pandas
