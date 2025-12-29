@@ -1,3 +1,10 @@
+---
+date: '2025-12-28'
+last_modified: 2025-12-28 21:58
+tags: []
+title: README
+---
+
 # 🧠 Mind-OS: AI-Native Personal Growth System
 > **"Not just a prompt, but an Operating System for your Psyche."**
 

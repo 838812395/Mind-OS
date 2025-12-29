@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2025-12-28 22:29:04",
+    "course": "Python Base",
+    "duration_minutes": 30.0,
+    "notes": "Installed Python and VSCode"
+  },
+  {
+    "timestamp": "2025-12-29 00:28:13",
+    "course": "Thinking Models",
+    "duration_minutes": 60.0,
+    "notes": "深入探讨第一性原理：金钱的本质、大脑的能耗平衡、以及 AI 编程的主审官逻辑。智慧生根。"
+  },
+  {
+    "timestamp": "2025-12-29 00:30:46",
+    "course": "Thinking Models",
+    "duration_minutes": 0.1,
+    "notes": "学习归档"
+  },
+  {
+    "timestamp": "2025-12-29 13:08:28",
+    "course": "Java Base",
+    "duration_minutes": 1.9,
+    "notes": "学习归档"
+  }
+]

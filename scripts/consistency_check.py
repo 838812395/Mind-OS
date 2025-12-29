@@ -23,24 +23,32 @@ def check_logical_dissonance(root_dir):
     """Detect gap between Goals and Behaviors."""
     results = []
     
-    skill_tree_path = os.path.join(root_dir, "量化算法", "技能树.md")
     growth_log_path = os.path.join(root_dir, "无知地图", "成长日志.md")
     
-    if not os.path.exists(skill_tree_path):
-        return results
-
-    # 1. Extract Goals
+    # 1. Extract Goals form ALL Skill Trees
     goals = []
-    with open(skill_tree_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-        # Look for table entries in Bridge Plan
-        table_match = re.search(r'## 🌉 差距缩减计划.*?\n(.*?)\n\n', content, re.DOTALL)
-        if table_match:
-            rows = table_match.group(1).strip().split('\n')
-            for row in rows[2:]: # skip header and separator
-                cols = [c.strip() for c in row.split('|')]
-                if len(cols) > 2 and cols[2] != '-':
-                    goals.append(cols[2])
+    algorithm_dir = os.path.join(root_dir, "量化算法")
+    
+    if os.path.exists(algorithm_dir):
+        for filename in os.listdir(algorithm_dir):
+            if filename.startswith("技能树") and filename.endswith(".md"):
+                file_path = os.path.join(algorithm_dir, filename)
+                print(f"    - Scanning goals in: {filename}")
+                
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    # Look for table entries in Bridge Plan
+                    table_match = re.search(r'## 🌉 差距缩减计划.*?\n(.*?)\n\n', content, re.DOTALL)
+                    if table_match:
+                        rows = table_match.group(1).strip().split('\n')
+                        for row in rows[2:]: # skip header and separator
+                            cols = [c.strip() for c in row.split('|')]
+                            if len(cols) > 2 and cols[2] != '-':
+                                goals.append(cols[2])
+
+    # skill_tree_path = os.path.join(root_dir, "量化算法", "技能树.md")
+    # if not os.path.exists(skill_tree_path):
+    #     return results
 
     if not goals:
         return results
@@ -55,7 +63,8 @@ def check_logical_dissonance(root_dir):
         
     for goal in goals:
         # Simple keyword matching for now, could be upgraded to semantic search
-        keywords = re.findall(r'[\u4e00-\u9fa5]{2,}', goal) # Extract Chinese keywords
+        # Updated regex to match both Chinese characters and English words (2+ chars)
+        keywords = re.findall(r'[\u4e00-\u9fa5]{2,}|\b[a-zA-Z]{2,}\b', goal)
         match_found = False
         for kw in keywords:
             if kw.lower() in log_content:

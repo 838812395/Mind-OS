@@ -1,9 +1,7 @@
 import sys
 import argparse
 import pandas as pd
-from scripts.consistency_check import scan_system
-from scripts.radar_gen import create_radar_chart
-from scripts.memory_engine import sync_memory, query_memory, semantic_route
+# Imports moved to lazy loading inside main()
 
 def main():
     parser = argparse.ArgumentParser(description="Mind-OS CLI - Your Psyche's Management Tool")
@@ -38,26 +36,112 @@ def main():
     set_parser.add_argument("score", type=int, help="The new score (0-100)")
     set_parser.add_argument("evidence", type=str, help="The evidence or reason for change")
 
+    # Study command (New)
+    study_parser = subparsers.add_parser("study", help="Track your learning progress")
+    study_parser.add_argument("action", choices=["log", "start", "stop"], help="Action to perform")
+    study_parser.add_argument("course", type=str, help="Course name (e.g., 'Thinking Models')", nargs='?')
+    study_parser.add_argument("--editor", type=str, help="Preferred editor command (e.g., 'cursor', 'code')", default=None)
+    study_parser.add_argument("duration", type=float, help="Duration in minutes", nargs='?')
+    study_parser.add_argument("notes", type=str, help="What did you learn?", nargs='?')
+
+    read_parser = subparsers.add_parser("read", help="Read a file aloud (TTS)")
+    read_parser.add_argument("file", type=str, help="Path to markdown file or 'stop' to end playback")
+
+    # Remote command (New)
+    subparsers.add_parser("remote", help="Launch the floating voice control remote")
+
     args = parser.parse_args()
 
     if args.command == "audit":
+        from scripts.consistency_check import scan_system
         scan_system(".")
     elif args.command == "viz":
+        from scripts.radar_gen import create_radar_chart
+        from scripts.growth_engine import get_growth_data
         create_radar_chart()
+        growth = get_growth_data()
+        if growth and "deltas" in growth:
+            print("\n📈 今日成长摘要 (Growth Summary):")
+            for dim, val in growth["deltas"].items():
+                symbol = "↑" if val >= 0 else "↓"
+                print(f"  - {dim}: {symbol} {abs(val)}%")
+            print(f"📅 对比基准: {growth['dates'][0]} -> {growth['dates'][1]}")
     elif args.command == "ui":
         import subprocess
         print("🌐 Launching Mind-OS Dashboard...")
         subprocess.run([sys.executable, "-m", "streamlit", "run", "scripts/dashboard.py"])
     elif args.command == "sync":
+        from scripts.memory_engine import sync_memory
         sync_memory()
     elif args.command == "query":
+        from scripts.memory_engine import query_memory
         query_memory(args.text)
     elif args.command == "report":
         generate_narrative_report()
     elif args.command == "capture":
+        from scripts.memory_engine import semantic_route
         semantic_route(args.message)
     elif args.command == "set":
         update_stat(args.dimension, args.score, args.evidence)
+    elif args.command == "study":
+        if args.action == "log":
+            from scripts.study_tracker import log_study_session
+            # If duration is missing, maybe we should warn or try a default
+            duration = args.duration if args.duration is not None else 0
+            log_study_session(args.course, duration, args.notes)
+        elif args.action == "start":
+            from scripts.study_tracker import start_session
+            start_session(args.course or "General Thinking")
+            
+            # AUTO-START logic
+            import glob
+            import os
+            import subprocess
+            
+            # ... existing file opening logic ...
+            search_pattern = f"知识画像/*{args.course.replace(' ', '_')}*" if args.course else "知识画像/Thinking_Models"
+            potential_dirs = glob.glob(search_pattern)
+            if potential_dirs:
+                md_files = glob.glob(os.path.join(potential_dirs[0], "*.md"))
+                if md_files:
+                    latest_file = max(md_files, key=os.path.getmtime)
+                    print(f"🕯️ Entering Deep Reflection on: {os.path.basename(latest_file)}")
+                    
+                    # 1. Start Reading (Background)
+                    from scripts.tts_engine import read_file
+                    read_file(latest_file)
+                    
+                    # 2. Open file for user
+                    if args.editor:
+                        try:
+                            # Use Popen to avoid blocking
+                            subprocess.Popen([args.editor, latest_file], shell=True)
+                        except Exception as e:
+                            print(f"❌ Failed to open with {args.editor}: {e}")
+                            if os.name == 'nt': os.startfile(latest_file)
+                    elif os.name == 'nt':
+                        os.startfile(latest_file)
+                    else:
+                        subprocess.run(['open', latest_file])
+        elif args.action == "stop":
+            from scripts.study_tracker import stop_and_log_session
+            from scripts.tts_engine import stop_playback
+            # Stop audio too
+            stop_playback()
+            # Stop timing and log
+            notes = args.notes if args.notes else "学习归档"
+            stop_and_log_session(notes)
+    elif args.command == "read":
+        from scripts.tts_engine import read_file
+        read_file(args.file)
+    elif args.command == "remote":
+        import subprocess
+        import os
+        print("🚀 Launching Floating Remote...")
+        # Use Popen to launch it as a separate persistent process
+        subprocess.Popen([sys.executable, "scripts/voice_remote.py"], 
+                         creationflags=subprocess.DETACHED_PROCESS if os.name == 'nt' else 0,
+                         close_fds=True)
     else:
         parser.print_help()
 

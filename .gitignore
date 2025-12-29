@@ -1,50 +1,21 @@
-# Git Ignore Rules for Mind-OS
+# Temp files
+scripts/session.json
+scripts/temp_speech.mp3
+scripts/player.pid
+scripts/silent_player.vbs
 
-# 1. User Private Data (Do NOT commit these)
-对话记录/*
-!对话记录/对话引导模板.md
-心理画像/*
-!心理画像/.gitkeep
-核心记忆/*
-!核心记忆/.gitkeep
-
-# 2. Dynamic Data Logs (Keep headers, ignore content if possible, but simpler to ignore files)
-# For a template repo, we might want to keep example files only.
-# Assuming user will clear data before commit or use a 'template' branch.
-# Here we ignore specific personal logs identified by date
-对话记录/202*/*.md
-无知地图/已知的未知.md
-无知地图/成长日志.md
-深度觉察/潜意识模式.md
-深度觉察/认知偏差库.md
-增量引擎/红队测试.md
-智慧集成/决策日志.md
-智慧集成/虚拟私董会.md
-智慧集成/未来推演.md
-
-# 3. System Files (Keep these!)
-!AI规则.md
-!使用说明.md
-!README.md
-!量化算法/算法规则.md
-!量化算法/改进建议.md
-!智慧集成/人性解码器.md
-
-# 4. Technical Layer (Keep code, ignore runtime)
-!mind-os.py
-!requirements.txt
-!scripts/
-!config/
-.venv/
-.mind_os/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 
-# 5. Reports & Images
-分析报告/*.png
-分析报告/*.pdf
-!分析报告/.gitkeep
-
-# 6. OS files
+# OS
 .DS_Store
 Thumbs.db
+
+# System
+.gemini/
+.env
+
+# Audio output
+*.mp3

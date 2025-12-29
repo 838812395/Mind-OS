@@ -1,3 +1,10 @@
+---
+date: '2025-12-28'
+last_modified: 2025-12-28 21:58
+tags: []
+title: 元数据Schema
+---
+
 # Mind-OS Metadata Schema (Draft)
 
 To ensure consistency across the system, all `.md` files in the following directories MUST contain a YAML frontmatter block.

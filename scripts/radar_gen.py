@@ -1,15 +1,9 @@
 import os
 import yaml
-import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib
+# Matplotlib import moved to inside functions for lazy loading
 import re
 import json
 import datetime
-
-# Set font for Chinese support
-matplotlib.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'Arial Unicode MS']
-matplotlib.rcParams['axes.unicode_minus'] = False 
 
 def load_config():
     config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'mind_os_config.yaml')
@@ -110,6 +104,20 @@ def create_radar_chart():
     radar_cfg = config.get('radar', {})
     dimensions = [d.get('key', d['name']) for d in radar_cfg.get('dimensions', [])]
     
+    # LAZY IMPORT / DEPENDENCY CHECK
+    try:
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import matplotlib
+        
+        # Set font for Chinese support
+        matplotlib.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'Arial Unicode MS']
+        matplotlib.rcParams['axes.unicode_minus'] = False
+    except ImportError as e:
+        print(f"⚠️ Visualization skipped: Missing dependency ({e}).")
+        print("   Please install it via: pip install matplotlib numpy")
+        return
+
     # FETCH DYNAMIC SCORES
     print("📈 Extracting real-time scores from system metadata...")
     stats = get_dynamic_scores(config)
