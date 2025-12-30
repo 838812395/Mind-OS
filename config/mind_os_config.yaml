@@ -1,5 +1,10 @@
 # Mind-OS Global Configuration
 
+# 🔗 Flomo API 配置
+flomo:
+  api_url: "https://flomoapp.com/iwh/MTc0MTg2Mg/95b6ab4b043f796a073865e3dadc34d9/"
+  auto_sync: true  # 归档时自动同步到 flomo
+
 # 📂 Project Root Markers
 root_marker: ".mind-os-root"
 

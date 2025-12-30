@@ -1,9 +1,187 @@
 import sys
 import argparse
 import pandas as pd
+import os
+import re
+from datetime import datetime
 # Imports moved to lazy loading inside main()
 
+CONFIG_FILE = "个人配置.md"
+USER_MANUAL_FILE = "核心记忆/用户说明书.md"
+
+def check_user_profile_exists():
+    """检查用户是否已填写个人信息"""
+    if not os.path.exists(CONFIG_FILE):
+        return False
+    
+    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # 检查用户名是否还是默认的 [待填写]
+    if "[待填写]" in content or "用户名**: \n" in content:
+        return False
+    
+    return True
+
+def collect_user_info():
+    """首次使用时收集用户信息"""
+    print("\n" + "="*50)
+    print("🧠 欢迎使用 Mind-OS - 你的心智操作系统")
+    print("="*50)
+    print("\n📋 检测到这是您首次使用，需要收集一些基本信息。")
+    print("💡 这些信息仅存储在本地，用于为您提供更个性化的体验。\n")
+    
+    # 收集基本信息
+    username = input("👤 请输入您的昵称/用户名: ").strip()
+    if not username:
+        username = "用户"
+    
+    print("\n🎯 您的主要成长目标是什么？")
+    print("   (例如: 提升认知能力、建立知识体系、自我觉察等)")
+    goal = input("   > ").strip()
+    if not goal:
+        goal = "通过对话认识自我，发现盲区，持续学习成长"
+    
+    print("\n📚 您主要关注哪些领域？(可多选，用逗号分隔)")
+    print("   1.技术 2.商业 3.人文 4.艺术 5.心理 6.其他")
+    domains_input = input("   > ").strip()
+    
+    domains = []
+    domain_map = {"1": "技术领域", "2": "商业领域", "3": "人文领域", 
+                  "4": "艺术领域", "5": "心理领域", "6": "其他"}
+    for d in domains_input.replace("，", ",").split(","):
+        d = d.strip()
+        if d in domain_map:
+            domains.append(domain_map[d])
+        elif d:
+            domains.append(d)
+    
+    print("\n💪 您认为自己的优势是什么？")
+    strengths = input("   > ").strip()
+    
+    print("\n🎭 您希望AI在什么情况下如何帮助您？")
+    print("   (例如: 迷茫时给方向、焦虑时安抚、学习时督促)")
+    help_style = input("   > ").strip()
+    
+    # 更新个人配置文件
+    update_config_file(username, goal, domains)
+    
+    # 更新用户说明书
+    update_user_manual(strengths, help_style)
+    
+    print("\n" + "="*50)
+    print(f"✅ 配置完成！欢迎你，{username}！")
+    print("🚀 Mind-OS 已准备就绪，开始你的心智成长之旅吧！")
+    print("="*50 + "\n")
+    
+    return True
+
+def update_config_file(username, goal, domains):
+    """更新个人配置文件"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    domain_checklist = ""
+    all_domains = ["技术领域", "商业领域", "人文领域", "艺术领域", "心理领域"]
+    for d in all_domains:
+        if d in domains:
+            domain_checklist += f"- [x] {d}\n"
+        else:
+            domain_checklist += f"- [ ] {d}\n"
+    
+    # 添加其他自定义领域
+    for d in domains:
+        if d not in all_domains and d != "其他":
+            domain_checklist += f"- [x] {d}\n"
+    
+    content = f"""---
+date: '{today}'
+last_modified: {today}
+tags: [个人配置]
+title: 个人配置
+---
+
+# 个人配置
+
+## 👤 基本信息
+
+- **创建日期**: {today}
+- **用户名**: {username}
+
+---
+
+## 🎯 成长目标
+
+> {goal}
+
+---
+
+## 📚 关注领域
+
+{domain_checklist}
+---
+
+## 📊 对话统计
+
+- 总对话次数: 0
+- 发现的知识点: 0
+- 发现的盲区: 0
+- 最近一次对话: 无
+
+---
+
+## 📝 备注
+
+（可以记录任何想让AI知道的背景信息）
+
+"""
+    
+    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+        f.write(content)
+
+def update_user_manual(strengths, help_style):
+    """更新用户说明书"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    content = f"""---
+date: '{today}'
+last_modified: {today}
+tags: [用户画像]
+title: 用户说明书
+---
+
+# 用户说明书 (User Manual)
+
+## 📖 关于我
+
+>这是一份给AI（以及未来的我）看的"操作指南"
+
+### 1. 我的优势 (My Superpowers)
+- {strengths if strengths else "待发现..."}
+
+### 2. 我的弱点 (My Kryptonite)
+- 待发现...
+
+### 3. 我在压力下的表现
+- 待观察...
+
+### 4. 如何最好地帮助我
+- {help_style if help_style else "待了解..."}
+
+---
+
+*这份文档将随着我们越来越了解而不断完善*
+
+"""
+    
+    os.makedirs(os.path.dirname(USER_MANUAL_FILE), exist_ok=True)
+    with open(USER_MANUAL_FILE, 'w', encoding='utf-8') as f:
+        f.write(content)
+
 def main():
+    # 首次使用检查 - 收集用户信息
+    if not check_user_profile_exists():
+        collect_user_info()
+    
     parser = argparse.ArgumentParser(description="Mind-OS CLI - Your Psyche's Management Tool")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -49,6 +227,25 @@ def main():
 
     # Remote command (New)
     subparsers.add_parser("remote", help="Launch the floating voice control remote")
+
+    # Blackboard commands (New)
+    board_parser = subparsers.add_parser("board", help="学习黑板 - 与AI对话学习")
+    board_parser.add_argument("action", choices=["start", "reply", "show", "archive", "clear"], 
+                              help="start=开始会话, reply=回复, show=查看, archive=归档, clear=清空")
+    board_parser.add_argument("content", type=str, nargs="*", help="内容或主题")
+
+    # AI teach command
+    teach_parser = subparsers.add_parser("teach", help="AI在黑板上写教学内容")
+    teach_parser.add_argument("content", type=str, help="教学内容")
+    teach_parser.add_argument("--type", type=str, default="teach", 
+                              choices=["question", "teach", "insight", "task", "feedback"],
+                              help="内容类型")
+
+    # Flomo commands
+    flomo_parser = subparsers.add_parser("flomo", help="同步内容到 flomo 笔记")
+    flomo_parser.add_argument("action", choices=["note", "insight", "retry", "status", "test"], 
+                              help="note=快速笔记, insight=洞察, retry=重试队列, status=查看状态, test=测试")
+    flomo_parser.add_argument("content", type=str, nargs="*", help="内容")
 
     args = parser.parse_args()
 
@@ -142,6 +339,38 @@ def main():
         subprocess.Popen([sys.executable, "scripts/voice_remote.py"], 
                          creationflags=subprocess.DETACHED_PROCESS if os.name == 'nt' else 0,
                          close_fds=True)
+    elif args.command == "board":
+        from scripts.blackboard import start_session, user_reply, show_blackboard, archive_blackboard, clear_blackboard
+        content = " ".join(args.content) if args.content else None
+        if args.action == "start":
+            start_session(content)
+        elif args.action == "reply":
+            if content:
+                user_reply(content)
+            else:
+                print("❌ 请输入回复内容")
+        elif args.action == "show":
+            show_blackboard()
+        elif args.action == "archive":
+            archive_blackboard(content)
+        elif args.action == "clear":
+            clear_blackboard()
+    elif args.command == "teach":
+        from scripts.blackboard import ai_write
+        ai_write(args.content, args.type)
+    elif args.command == "flomo":
+        from scripts.flomo_sync import quick_note, sync_insight, send_to_flomo, retry_queue, show_queue
+        content = " ".join(args.content) if args.content else ""
+        if args.action == "test":
+            send_to_flomo("🧠 Mind-OS 连接测试", tags=["MindOS", "测试"])
+        elif args.action == "note":
+            quick_note(content)
+        elif args.action == "insight":
+            sync_insight(content)
+        elif args.action == "retry":
+            retry_queue()
+        elif args.action == "status":
+            show_queue()
     else:
         parser.print_help()
 
